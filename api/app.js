@@ -2,26 +2,21 @@ const express = require("express");
 const app = express();
 app.set("trust proxy", true);
 
-const requestTime = (req, res, next) => {
+const requestTimer = (req, res, next) => {
   req.startTime = Date.now();
   next();
 };
 
-const responseTime = (req, res, next) => {
-  res.endTime = Date.now();
-  next();
-};
-
 const clientIP = (req, res, next) => {
-  const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  const ip = req.headers["x-forwarded-for"] || req.ip;
   console.log(`Requested from: ${ip}`);
   next();
 };
 
-app.use([requestTime, responseTime, clientIP]);
+app.use([requestTimer, clientIP]);
 
 app.get("/", (req, res) => {
-  const timeDuration = res.endTime - req.startTime;
+  const timeDuration = Date.now() - req.startTime;
   console.log(timeDuration);
   var responseText = "Hello World!<br>";
   responseText += `<small>Request finished in: ${timeDuration}.</small> </br>`;
